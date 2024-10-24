@@ -2,6 +2,16 @@ import requests
 from bs4 import BeautifulSoup
 import random
 import time
+import os
+from dotenv import load_dotenv
+
+# Load the .env file
+load_dotenv(dotenv_path='config.env')  # Make sure to specify the correct path
+
+# Read delay values from .env
+DELAY_MIN = float(os.getenv("DELAY_MIN", 5))  # Default to 5 seconds
+DELAY_MAX = float(os.getenv("DELAY_MAX", 10))  # Default to 10 seconds
+N = int(os.getenv("N", 10))  # Default to 10 if not found
 
 # List of User-Agent headers
 USER_AGENTS = [
@@ -17,9 +27,9 @@ def google_search(keywords, region='IN'):
     headers = {
         "User-Agent": random.choice(USER_AGENTS)  # Randomize User-Agent
     }
-    
-    # Adding a random delay to avoid rate limiting
-    time.sleep(random.uniform(5, 10))
+
+    # Adding a delay to avoid rate limiting (from .env file)
+    time.sleep(random.uniform(DELAY_MIN, DELAY_MAX))
 
     try:
         response = requests.get(url, headers=headers)
@@ -37,4 +47,9 @@ def google_search(keywords, region='IN'):
         if link:
             results.append(link['href'])
     
-    return results[:10]  # Return the top 10 results initially
+    return results[:N]  # Return the top N results based on the environment variable
+
+# Example usage
+if __name__ == "__main__":
+    keywords = ['example', 'keyword']  # Replace with actual keywords
+    print(google_search(keywords))
